@@ -1,0 +1,57 @@
+#include <LPC17xx.h>
+#define LED 0xff // P0.4-P0.11
+#define BUZZER_PIN (1 << 12) // P0.12 for Buzzer
+
+float distance = 0; // Distance variable
+unsigned int j;
+
+void delay(unsigned int r1);
+void led_buzzer_control(void);
+
+void delay(unsigned int r1)
+{
+    for (j = 0; j < r1; j++); // Simple delay loop
+}
+
+void buzz_init(void)
+{
+    LPC_PINCON->PINSEL0 &= 0xFF0FFFFF; // Configure P0.12 as GPIO (for buzzer)
+    LPC_GPIO0->FIODIR |= BUZZER_PIN;   // Set P0.12 as output for the buzzer
+}
+
+int main()
+{
+    //SystemInit();
+    //SystemCoreClockUpdate();
+    
+    LPC_PINCON->PINSEL0 &= 0xFFFFF00F; // P0.4-P0.11 as GPIO for LEDs
+    LPC_GPIO0->FIODIR |= LED << 4;     // Set LEDs as output
+
+		// Initialize the buzzer
+    buzz_init(); 
+	
+    // Simulate distance calculation using hardcoded value
+    distance = 15.0; // Hardcoded distance value (e.g., 15 cm)
+
+    // LED control logic based on distance
+    while (1)
+    {
+        if (distance < 20) // If distance is less than 20
+        {
+            LPC_GPIO0->FIOSET = LED << 4;  //Turn on all LEDs
+						LPC_GPIO0->FIOSET = BUZZER_PIN; // Turn on the buzzer
+        }
+        else
+        {
+            LPC_GPIO0->FIOCLR = LED << 4;  // Turn off all LEDs
+						LPC_GPIO0->FIOCLR = BUZZER_PIN; // Turn off the buzzer
+        }
+
+        delay(10);
+
+        
+        distance += 5; 
+        if (distance > 30)
+            distance = 10;  // Reset distance 
+    }
+}
